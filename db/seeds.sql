@@ -1,4 +1,4 @@
-user tracker;
+user emp_db;
 
 INSERT INTO department
     (name)

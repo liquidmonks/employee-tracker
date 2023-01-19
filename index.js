@@ -9,11 +9,18 @@ const db = mysql.createConnection(
     // MySQL username,
     user: "root",
     // MySQL password
-    password: "root",
+    password: "changemenow",
     database: "emp_db",
   },
-  console.log(`Connected to the tracker database.`)
+  console.log(`Connected to the emp_db database.`)
 );
+
+// Start the application
+db.connect(function (err) {
+  if (err) throw err;
+  console.log("Connected!");
+  start();
+});
 
 // Function to view all departments
 function viewDepartments() {

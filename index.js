@@ -339,3 +339,34 @@ function addEmployee() {
       );
     });
 } // end of addEmployee function
+
+// Function to delete an employee
+function deleteEmployee() {
+  inquirer
+    .prompt([
+      {
+        name: "first_name",
+        type: "input",
+        message: "What is the first name of the employee you would like to delete?",
+      },
+      {
+        name: "last_name",
+        type: "input",
+        message: "What is the last name of the employee you would like to delete?",
+      },
+    ])
+    .then(function (answer) {
+      db.query(
+        "DELETE FROM employee WHERE ?",
+        {
+          first_name: answer.first_name,
+          last_name: answer.last_name,
+        },
+        function (err) {
+          if (err) throw err;
+          console.log("Your employee was deleted successfully!");
+          start();
+        }
+      );
+    });
+} // end of delete Employee function

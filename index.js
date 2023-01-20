@@ -149,3 +149,27 @@ function addDepartment() {
     });
 }
 // //
+// Function to delete a department
+function deleteDepartment() {
+  inquirer
+    .prompt([
+      {
+        name: "department",
+        type: "input",
+        message: "What is the name of the department you would like to delete?",
+      },
+    ])
+    .then(function (answer) {
+      db.query(
+        "DELETE FROM department WHERE ?",
+        {
+          name: answer.department,
+        },
+        function (err) {
+          if (err) throw err;
+          console.log("Your department was deleted successfully!");
+          start();
+        }
+      );
+    });
+}

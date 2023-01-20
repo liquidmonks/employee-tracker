@@ -289,3 +289,10 @@ function viewEmployeesByDepartment() {
     console.table(results);
   });
 } // end of viewEmployeesByDepartment function
+
+// Function to view all employees by manager
+function viewEmployeesByManager() {
+  db.query("SELECT * FROM employee", function (err, results) {
+    console.table(results);
+  });
+} // end of viewEmployeesByManager function

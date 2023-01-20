@@ -282,3 +282,10 @@ function viewEmployees() {
     console.table(results);
   });
 } // end of viewEmployees function
+
+// Function to view all employees by department
+function viewEmployeesByDepartment() {
+  db.query("SELECT * FROM employee", function (err, results) {
+    console.table(results);
+  });
+} // end of viewEmployeesByDepartment function

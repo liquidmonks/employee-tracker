@@ -410,4 +410,45 @@ function updateEmployeeRole() {
         }
       );
     });
-} // end of update EmployeeRole function
+} // end of update Employee Role function
+
+// Function to update an employee's manager
+function updateEmployeeManager() {
+  inquirer
+    .prompt([
+      {
+        name: "first_name",
+        type: "input",
+        message: "What is the first name of the employee you would like to update?",
+      },
+      {
+        name: "last_name",
+        type: "input",
+        message: "What is the last name of the employee you would like to update?",
+      },
+      {
+        name: "manager_id",
+        type: "input",
+        message: "What is the manager id of the employee you would like to update?",
+      },
+    ])
+    .then(function (answer) {
+      db.query(
+        "UPDATE employee SET ? WHERE ?",
+        [
+          {
+            manager_id: answer.manager_id,
+          },
+          {
+            first_name: answer.first_name,
+            last_name: answer.last_name,
+          },
+        ],
+        function (err) {
+          if (err) throw err;
+          console.log("Your employee was updated successfully!");
+          start();
+        }
+      );
+    });
+} // end of update Employee Manager function

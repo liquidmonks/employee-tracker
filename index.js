@@ -295,4 +295,47 @@ function viewEmployeesByManager() {
   db.query("SELECT * FROM employee", function (err, results) {
     console.table(results);
   });
-} // end of viewEmployeesByManager function
+} // end of view Employees B yManager function
+
+// Function to add an employee
+function addEmployee() {
+  inquirer
+    .prompt([
+      {
+        name: "first_name",
+        type: "input",
+        message: "What is the first name of the employee you would like to add?",
+      },
+      {
+        name: "last_name",
+        type: "input",
+        message: "What is the last name of the employee you would like to add?",
+      },
+      {
+        name: "role_id",
+        type: "input",
+        message: "What is the role id of the employee you would like to add?",
+      },
+      {
+        name: "manager_id",
+        type: "input",
+        message: "What is the manager id of the employee you would like to add?",
+      },
+    ])
+    .then(function (answer) {
+      db.query(
+        "INSERT INTO employee SET ?",
+        {
+          first_name: answer.first_name,
+          last_name: answer.last_name,
+          role_id: answer.role_id,
+          manager_id: answer.manager_id,
+        },
+        function (err) {
+          if (err) throw err;
+          console.log("Your employee was created successfully!");
+          start();
+        }
+      );
+    });
+} // end of addEmployee function

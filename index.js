@@ -273,3 +273,12 @@ function deleteRole() {
 } // end of deleteRole function
 
 /***********************ROLE BLOCK************************:END*/
+
+/*START:**********************EMPLOYEE BLOCK************************/
+
+// Function to view all employees
+function viewEmployees() {
+  db.query("SELECT * FROM employee", function (err, results) {
+    console.table(results);
+  });
+} // end of viewEmployees function

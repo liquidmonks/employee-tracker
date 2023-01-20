@@ -117,6 +117,7 @@ function start() {
 
 // end of start function
 
+/*START:**********************DEPARTMENT BLOCK************************/
 // Function to view all departments
 function viewDepartments() {
   db.query("SELECT * FROM department", function (err, results) {
@@ -198,6 +199,9 @@ function viewBudget() {
       );
     });
 }
+/***********************DEPARTMENT BLOCK************************:END*/
+
+/*START:**********************ROLE BLOCK************************/
 
 // Function to view all roles
 function viewRoles() {
@@ -205,3 +209,42 @@ function viewRoles() {
     console.table(results);
   });
 } // end of viewRoles function
+
+// Function to add a role to the role table
+function addRole() {
+  inquirer
+    .prompt([
+      {
+        name: "title",
+        type: "input",
+        message: "What is the title of the role you would like to add?",
+      },
+      {
+        name: "salary",
+        type: "input",
+        message: "What is the salary of the role you would like to add?",
+      },
+      {
+        name: "department_id",
+        type: "input",
+        message: "What is the department id of the role you would like to add?",
+      },
+    ])
+    .then(function (answer) {
+      db.query(
+        "INSERT INTO role SET ?",
+        {
+          title: answer.title,
+          salary: answer.salary,
+          department_id: answer.department_id,
+        },
+        function (err) {
+          if (err) throw err;
+          console.log("Your role was created successfully!");
+          start();
+        }
+      );
+    });
+} // end of addRole function
+
+/***********************ROLE BLOCK************************:END*/

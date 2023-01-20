@@ -370,3 +370,44 @@ function deleteEmployee() {
       );
     });
 } // end of delete Employee function
+
+// Function to update an employee's role
+function updateEmployeeRole() {
+  inquirer
+    .prompt([
+      {
+        name: "first_name",
+        type: "input",
+        message: "What is the first name of the employee you would like to update?",
+      },
+      {
+        name: "last_name",
+        type: "input",
+        message: "What is the last name of the employee you would like to update?",
+      },
+      {
+        name: "role_id",
+        type: "input",
+        message: "What is the role id of the employee you would like to update?",
+      },
+    ])
+    .then(function (answer) {
+      db.query(
+        "UPDATE employee SET ? WHERE ?",
+        [
+          {
+            role_id: answer.role_id,
+          },
+          {
+            first_name: answer.first_name,
+            last_name: answer.last_name,
+          },
+        ],
+        function (err) {
+          if (err) throw err;
+          console.log("Your employee was updated successfully!");
+          start();
+        }
+      );
+    });
+} // end of update EmployeeRole function

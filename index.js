@@ -247,4 +247,29 @@ function addRole() {
     });
 } // end of addRole function
 
+// Function to delete a role from the role table
+function deleteRole() {
+  inquirer
+    .prompt([
+      {
+        name: "title",
+        type: "input",
+        message: "What is the title of the role you would like to delete?",
+      },
+    ])
+    .then(function (answer) {
+      db.query(
+        "DELETE FROM role WHERE ?",
+        {
+          title: answer.title,
+        },
+        function (err) {
+          if (err) throw err;
+          console.log("Your role was deleted successfully!");
+          start();
+        }
+      );
+    });
+} // end of deleteRole function
+
 /***********************ROLE BLOCK************************:END*/

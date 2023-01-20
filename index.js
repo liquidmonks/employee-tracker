@@ -281,21 +281,64 @@ function viewEmployees() {
   db.query("SELECT * FROM employee", function (err, results) {
     console.table(results);
   });
-} // end of viewEmployees function
+} // end of view Employees function
 
 // Function to view all employees by department
 function viewEmployeesByDepartment() {
   db.query("SELECT * FROM employee", function (err, results) {
     console.table(results);
   });
-} // end of viewEmployeesByDepartment function
+} // end of view Employees By Department function
 
 // Function to view all employees by manager
 function viewEmployeesByManager() {
   db.query("SELECT * FROM employee", function (err, results) {
     console.table(results);
   });
-} // end of view Employees B yManager function
+} // end of view Employees By Manager function
+
+// Function to add a manager
+function addManager() {
+  inquirer
+    .prompt([
+      {
+        name: "first_name",
+        type: "input",
+        message: "What is the first name of the manager you would like to add?",
+      },
+      {
+        name: "last_name",
+        type: "input",
+        message: "What is the last name of the manager you would like to add?",
+      },
+      {
+        name: "role_id",
+        type: "input",
+        message: "What is the role id of the manager you would like to add?",
+      },
+      {
+        name: "manager_id",
+        type: "input",
+        message: "What is the manager id of the manager you would like to add?",
+      },
+    ])
+    .then(function (answer) {
+      db.query(
+        "INSERT INTO employee SET ?",
+        {
+          first_name: answer.first_name,
+          last_name: answer.last_name,
+          role_id: answer.role_id,
+          manager_id: answer.manager_id,
+        },
+        function (err) {
+          if (err) throw err;
+          console.log("Your manager was created successfully!");
+          start();
+        }
+      );
+    });
+} // end of addManager function
 
 // Function to add an employee
 function addEmployee() {
@@ -338,7 +381,7 @@ function addEmployee() {
         }
       );
     });
-} // end of addEmployee function
+} // end of add Employee function
 
 // Function to delete an employee
 function deleteEmployee() {

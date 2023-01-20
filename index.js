@@ -173,3 +173,35 @@ function deleteDepartment() {
       );
     });
 }
+
+// Function to view utilized budget of a department
+function viewBudget() {
+  inquirer
+    .prompt([
+      {
+        name: "department",
+        type: "input",
+        message: "What is the name of the department?",
+      },
+    ])
+    .then(function (answer) {
+      db.query(
+        "SELECT SUM(salary) AS utilized_budget FROM role WHERE department_id = ?",
+        {
+          name: answer.department,
+        },
+        function (err, results) {
+          if (err) throw err;
+          console.table(results);
+          start();
+        }
+      );
+    });
+}
+
+// Function to view all roles
+function viewRoles() {
+  db.query("SELECT * FROM role", function (err, results) {
+    console.table(results);
+  });
+} // end of viewRoles function

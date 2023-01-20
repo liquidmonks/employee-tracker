@@ -12,7 +12,7 @@ const db = mysql.createConnection(
     user: "root",
     // MySQL password
     password: process.env.DB_PASS,
-    database: "emp_db",
+    database: process.env.DB,
   },
   console.log(`Connected to the emp_db database.`)
 );

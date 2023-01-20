@@ -20,6 +20,7 @@
   "homepage": "https://github.com/liquidmonks/employee-tracker#readme",
   "dependencies": {
     "console.table": "^0.10.0",
+    "dotenv": "^16.0.3",
     "inquirer": "^8.2.4",
     "inquirer-table-select-prompt": "^0.1.1",
     "inquirer-tree-prompt": "^1.1.2",

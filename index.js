@@ -2,6 +2,7 @@
 const mysql = require("mysql2");
 const cTable = require("console.table");
 const inquirer = require("inquirer");
+const dotenv = require("dotenv").config();
 
 // Connect to database
 const db = mysql.createConnection(
@@ -10,7 +11,7 @@ const db = mysql.createConnection(
     // MySQL username,
     user: "root",
     // MySQL password
-    password: "Siriusxm@2k22",
+    password: process.env.DB_PASS,
     database: "emp_db",
   },
   console.log(`Connected to the emp_db database.`)
@@ -116,28 +117,35 @@ function start() {
 
 // end of start function
 
-// // Function to view all departments
-// function viewDepartments() {
-//   db.query("SELECT * FROM department", function (err, results) {
-//     console.table(results);
-//   });
-// }
+// Function to view all departments
+function viewDepartments() {
+  db.query("SELECT * FROM department", function (err, results) {
+    console.table(results);
+  });
+}
 
-// // Function to view all roles
-// inquirer
-//   .prompt([
-//     {
-//       type: "list",
-//       message: "What would you like to do?",
-//       name: "choice",
-//       choices: [
-//         { name: "View all departments", value: "VIEW DEPARTMENTS" },
-//         { name: "View all roles", value: "VIEW ROLES" },
-//       ],
-//     },
-//   ])
-//   .then((response) => {
-//     if (response.choice === "VIEW DEPARTMENTS") {
-//       viewDepartments();
-//     }
-//   });
+// Function to add a department
+function addDepartment() {
+  inquirer
+    .prompt([
+      {
+        name: "department",
+        type: "input",
+        message: "What is the name of the department you would like to add?",
+      },
+    ])
+    .then(function (answer) {
+      db.query(
+        "INSERT INTO department SET ?",
+        {
+          name: answer.department,
+        },
+        function (err) {
+          if (err) throw err;
+          console.log("Your department was created successfully!");
+          start();
+        }
+      );
+    });
+}
+// //

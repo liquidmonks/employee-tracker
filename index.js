@@ -18,6 +18,7 @@ const db = mysql.createConnection(
 );
 
 // Start the application
+
 db.connect(function (err) {
   if (err) throw err;
   console.log("Connected!");
@@ -121,7 +122,10 @@ function start() {
 // Function to view all departments
 function viewDepartments() {
   db.query("SELECT * FROM department", function (err, results) {
+    if (err) throw err;
     console.table(results);
+    // Inquires to end or re-execute program
+    startOrExit();
   });
 }
 
@@ -144,7 +148,7 @@ function addDepartment() {
         function (err) {
           if (err) throw err;
           console.log("Your department was created successfully!");
-          start();
+          startOrExit();
         }
       );
     });
@@ -194,7 +198,7 @@ function viewBudget() {
         function (err, results) {
           if (err) throw err;
           console.table(results);
-          start();
+          startOrExit();
         }
       );
     });
@@ -207,44 +211,53 @@ function viewBudget() {
 function viewRoles() {
   db.query("SELECT * FROM role", function (err, results) {
     console.table(results);
+    startOrExit();
   });
 } // end of viewRoles function
 
 // Function to add a role to the role table
 function addRole() {
-  inquirer
-    .prompt([
-      {
-        name: "title",
-        type: "input",
-        message: "What is the title of the role you would like to add?",
-      },
-      {
-        name: "salary",
-        type: "input",
-        message: "What is the salary of the role you would like to add?",
-      },
-      {
-        name: "department_id",
-        type: "input",
-        message: "What is the department id of the role you would like to add?",
-      },
-    ])
-    .then(function (answer) {
-      db.query(
-        "INSERT INTO role SET ?",
+  // Select all departments and then in inquirer loop over all department names to show names.
+  db.query(`SELECT DISTINCT * FROM department`, (err, result) => {
+    if (err) throw err;
+    inquirer
+      .prompt([
         {
-          title: answer.title,
-          salary: answer.salary,
-          department_id: answer.department_id,
+          name: "role",
+          type: "input",
+          message: "What is the title of the role you like to add?",
         },
-        function (err) {
+        {
+          name: "salary",
+          type: "input",
+          message: "What is the salary of the role?",
+          validate: (input) => {
+            if (isNaN(input)) {
+              console.log("Please enter a number!");
+              return false;
+            } else {
+              return true;
+            }
+          },
+        },
+        {
+          name: "department",
+          type: "list",
+          message: "What department does the role belong to?",
+          choices: () => result.map((result) => result.name),
+        },
+      ])
+      .then(function (answers) {
+        // Filter out id of that department and add to database
+        const departmentID = result.filter((result) => result.name === answers.department)[0].id;
+        console.log(departmentID);
+        db.query(`INSERT INTO role (title,salary,department_id) VALUES ('${answers.role}','${answers.salary}','${departmentID}')`, function (err) {
           if (err) throw err;
-          console.log("Your role was created successfully!");
-          start();
-        }
-      );
-    });
+          console.log(answers.role + " successfully add to roles under " + answers.department);
+          startOrExit();
+        });
+      });
+  });
 } // end of addRole function
 
 // Function to delete a role from the role table
@@ -266,7 +279,7 @@ function deleteRole() {
         function (err) {
           if (err) throw err;
           console.log("Your role was deleted successfully!");
-          start();
+          startOrExit();
         }
       );
     });
@@ -280,6 +293,7 @@ function deleteRole() {
 function viewEmployees() {
   db.query("SELECT * FROM employee", function (err, results) {
     console.table(results);
+    startOrExit();
   });
 } // end of view Employees function
 
@@ -287,6 +301,7 @@ function viewEmployees() {
 function viewEmployeesByDepartment() {
   db.query("SELECT * FROM employee", function (err, results) {
     console.table(results);
+    startOrExit();
   });
 } // end of view Employees By Department function
 
@@ -294,94 +309,109 @@ function viewEmployeesByDepartment() {
 function viewEmployeesByManager() {
   db.query("SELECT * FROM employee", function (err, results) {
     console.table(results);
+    startOrExit();
   });
 } // end of view Employees By Manager function
 
 // Function to add a manager
 function addManager() {
-  inquirer
-    .prompt([
-      {
-        name: "first_name",
-        type: "input",
-        message: "What is the first name of the manager you would like to add?",
-      },
-      {
-        name: "last_name",
-        type: "input",
-        message: "What is the last name of the manager you would like to add?",
-      },
-      {
-        name: "role_id",
-        type: "input",
-        message: "What is the role id of the manager you would like to add?",
-      },
-      {
-        name: "manager_id",
-        type: "input",
-        message: "What is the manager id of the manager you would like to add?",
-      },
-    ])
-    .then(function (answer) {
-      db.query(
-        "INSERT INTO employee SET ?",
-        {
-          first_name: answer.first_name,
-          last_name: answer.last_name,
-          role_id: answer.role_id,
-          manager_id: answer.manager_id,
-        },
-        function (err) {
-          if (err) throw err;
-          console.log("Your manager was created successfully!");
-          start();
-        }
-      );
-    });
+  // Select titles and id of all roles and loop them to show choices
+  db.query(`SELECT DISTINCT title,id FROM role`, (err, role_result) => {
+    if (err) throw err;
+    db.query(
+      `SELECT DISTINCT CONCAT(e.first_name," ",e.last_name) AS manager_name,e.id
+      FROM employee
+      LEFT JOIN employee e
+      ON employee.manager_id = e.id
+      WHERE employee.manager_id IS NOT NULL`,
+      (err, manager_result) => {
+        if (err) throw err;
+        inquirer
+          .prompt([
+            {
+              name: "first_name",
+              type: "input",
+              message: "What is the Manager's first name?",
+            },
+            {
+              name: "last_name",
+              type: "input",
+              message: "What is the Manager's last name?",
+            },
+            {
+              name: "role",
+              type: "list",
+              message: "What is the Manager's role?",
+              choices: () => role_result.map((role_result) => role_result.title),
+            },
+          ])
+          .then(function (answers) {
+            // based on option name filter out id and add to database
+            const roleID = role_result.filter((role_result) => role_result.title === answers.role)[0].id;
+            db.query(`INSERT INTO employee(first_name,last_name,role_id) VALUES ('${answers.first_name}','${answers.last_name}','${roleID}');`, function (err) {
+              if (err) throw err;
+              console.log(answers.first_name + " " + answers.last_name + " Manager is successfully added!");
+              startOrExit();
+            });
+          });
+      }
+    );
+  });
 } // end of addManager function
 
 // Function to add an employee
 function addEmployee() {
-  inquirer
-    .prompt([
-      {
-        name: "first_name",
-        type: "input",
-        message: "What is the first name of the employee you would like to add?",
-      },
-      {
-        name: "last_name",
-        type: "input",
-        message: "What is the last name of the employee you would like to add?",
-      },
-      {
-        name: "role_id",
-        type: "input",
-        message: "What is the role id of the employee you would like to add?",
-      },
-      {
-        name: "manager_id",
-        type: "input",
-        message: "What is the manager id of the employee you would like to add?",
-      },
-    ])
-    .then(function (answer) {
-      db.query(
-        "INSERT INTO employee SET ?",
-        {
-          first_name: answer.first_name,
-          last_name: answer.last_name,
-          role_id: answer.role_id,
-          manager_id: answer.manager_id,
-        },
-        function (err) {
-          if (err) throw err;
-          console.log("Your employee was created successfully!");
-          start();
-        }
-      );
-    });
-} // end of add Employee function
+  // Select all roles from role tables and loop over their names in choices
+  db.query(`SELECT DISTINCT title,id FROM role`, (err, role_result) => {
+    if (err) throw err;
+    db.query(
+      `SELECT DISTINCT CONCAT(e.first_name," ",e.last_name) AS manager_name,e.id
+      FROM employee
+      LEFT JOIN employee e
+      ON employee.manager_id = e.id
+      WHERE employee.manager_id IS NOT NULL`,
+      (err, manager_result) => {
+        if (err) throw err;
+        inquirer
+          .prompt([
+            {
+              name: "first_name",
+              type: "input",
+              message: "What is the employee's first name?",
+            },
+            {
+              name: "last_name",
+              type: "input",
+              message: "What is the employee's last name?",
+            },
+            {
+              name: "role",
+              type: "list",
+              message: "What is the employee's role?",
+              choices: () => role_result.map((role_result) => role_result.title),
+            },
+            {
+              name: "manager",
+              type: "list",
+              message: "Who is the employee's manager?",
+              choices: () => manager_result.map((manager_result) => manager_result.manager_name),
+            },
+          ])
+          .then(function (answers) {
+            // Filter out role and manager id from answers and feed them in database
+            const managerID = manager_result.filter((manager_result) => manager_result.manager_name === answers.manager)[0].id;
+            const roleID = role_result.filter((role_result) => role_result.title === answers.role)[0].id;
+            db.query(`INSERT INTO employee(first_name,last_name,role_id,manager_id) VALUES ('${answers.first_name}','${answers.last_name}','${roleID}','${managerID}');`, function (err) {
+              if (err) throw err;
+              console.log(answers.first_name + " " + answers.last_name + " is successfully added!");
+              startOrExit();
+            });
+          });
+      }
+    );
+  });
+}
+// end of add Employee function
 
 // Function to delete an employee
 function deleteEmployee() {
@@ -408,7 +438,7 @@ function deleteEmployee() {
         function (err) {
           if (err) throw err;
           console.log("Your employee was deleted successfully!");
-          start();
+          startOrExit();
         }
       );
     });
@@ -449,7 +479,7 @@ function updateEmployeeRole() {
         function (err) {
           if (err) throw err;
           console.log("Your employee was updated successfully!");
-          start();
+          startOrExit();
         }
       );
     });
@@ -490,10 +520,35 @@ function updateEmployeeManager() {
         function (err) {
           if (err) throw err;
           console.log("Your employee was updated successfully!");
-          start();
+          startOrExit();
         }
       );
     });
 } // end of update Employee Manager function
 
 /***********************EMPLOYEE BLOCK************************:END*/
+
+// Exit function
+const exit = () => {
+  console.log("Goodbye!! See you.");
+  process.exit(1);
+};
+// Decide whether re-execute or exit
+const startOrExit = () => {
+  inquirer
+    .prompt([
+      {
+        name: "decision",
+        type: "list",
+        message: "Do you want to Exit?",
+        choices: ["YES", "NO"],
+      },
+    ])
+    .then((answers) => {
+      if (answers.decision === "YES") {
+        exit();
+      } else {
+        start();
+      }
+    });
+};

@@ -191,10 +191,8 @@ function viewBudget() {
     ])
     .then(function (answer) {
       db.query(
-        "SELECT SUM(salary) AS utilized_budget FROM role WHERE department_id = ?",
-        {
-          name: answer.department,
-        },
+        `SELECT SUM(salary) FROM role WHERE department_id = (SELECT id FROM department WHERE name = '${answer.department}');`,
+
         function (err, results) {
           if (err) throw err;
           console.table(results);
@@ -203,6 +201,7 @@ function viewBudget() {
       );
     });
 }
+
 /***********************DEPARTMENT BLOCK************************:END*/
 
 /*START:**********************ROLE BLOCK************************/

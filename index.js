@@ -428,18 +428,11 @@ function deleteEmployee() {
       },
     ])
     .then(function (answer) {
-      db.query(
-        "DELETE FROM employee WHERE ?",
-        {
-          first_name: answer.first_name,
-          last_name: answer.last_name,
-        },
-        function (err) {
-          if (err) throw err;
-          console.log("Your employee was deleted successfully!");
-          startOrExit();
-        }
-      );
+      db.query(`DELETE FROM employee WHERE first_name='${answer.first_name}' AND last_name='${answer.last_name}'`, function (err) {
+        if (err) throw err;
+        console.log("Your employee was deleted successfully!");
+        startOrExit();
+      });
     });
 } // end of delete Employee function
 

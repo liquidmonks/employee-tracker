@@ -53,8 +53,8 @@ The user can create, read, update, and delete data from an employee database.
 ## Application Demo Snippet
 ![emp_tracker](https://user-images.githubusercontent.com/114820394/214878880-3bd87ed2-7852-4945-b41f-1df380c1c2a2.gif)
 
-## 🔗 Apllication Complete Feature Demo
-[![Click for Tutorial](https://img.shields.io/badge/livesite-click-orange)](https://screencast-o-matic.com/watch/c0VOIQVxjdN)
+## 🔗 Full Feature Demo
+[![Click for Tutorial]([https://img.shields.io/badge/livesite-click-orange](https://img.shields.io/badge/Full%20Video%20Demo-Click-yellow))](https://screencast-o-matic.com/watch/c0VOIQVxjdN)
 
 
 ## Tech Stack

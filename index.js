@@ -11,6 +11,7 @@ const db = mysql.createConnection(
     // MySQL username,
     user: "root",
     // MySQL password
+    //
     password: process.env.DB_PASS,
     database: process.env.DB,
   },
@@ -181,25 +182,35 @@ function deleteDepartment() {
 
 // Function to view utilized budget of a department
 function viewBudget() {
-  inquirer
-    .prompt([
-      {
-        name: "department",
-        type: "input",
-        message: "What is the name of the department?",
-      },
-    ])
-    .then(function (answer) {
-      db.query(
-        `SELECT SUM(salary) FROM role WHERE department_id = (SELECT id FROM department WHERE name = '${answer.department}');`,
+  db.query(`SELECT DISTINCT * FROM department`, (err, result) => {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          name: "department",
+          type: "list",
+          message: "Choose department to view its budget?",
+          choices: () => result.map((result) => result.name),
+        },
+      ])
+      .then(function (answer) {
+        /*
+         *Extract the department id selected by user
+         */
 
-        function (err, results) {
-          if (err) throw err;
-          console.table(results);
-          startOrExit();
-        }
-      );
-    });
+        const departmentID = result.filter((result) => result.name === answer.department)[0].id;
+
+        db.query(
+          `SELECT concat('$','',FORMAT(SUM(salary),2)) as 'Total Budget' FROM role WHERE department_id =${departmentID};`,
+
+          function (err, results) {
+            if (err) throw err;
+            console.table(results);
+            startOrExit();
+          }
+        );
+      });
+  });
 }
 
 /***********************DEPARTMENT BLOCK************************:END*/
@@ -208,7 +219,7 @@ function viewBudget() {
 
 // Function to view all roles
 function viewRoles() {
-  db.query("SELECT * FROM role", function (err, results) {
+  db.query("SELECT role.id AS 'ID', role.title AS 'Title', concat('$','',FORMAT(role.salary,2)) AS 'Salary', depart.name AS 'Department' FROM role LEFT JOIN department depart ON depart.id = role.department_id;", function (err, results) {
     console.table(results);
     startOrExit();
   });
@@ -249,6 +260,7 @@ function addRole() {
       .then(function (answers) {
         // Filter out id of that department and add to database
         const departmentID = result.filter((result) => result.name === answers.department)[0].id;
+
         console.log(departmentID);
         db.query(`INSERT INTO role (title,salary,department_id) VALUES ('${answers.role}','${answers.salary}','${departmentID}')`, function (err) {
           if (err) throw err;
@@ -290,7 +302,7 @@ function deleteRole() {
 
 // Function to view all employees
 function viewEmployees() {
-  db.query("SELECT * FROM employee", function (err, results) {
+  db.query("SELECT emp.id as 'ID', emp.first_name as 'First Name', emp.last_name as 'Last Name' , role.title as 'Title', concat('$','',FORMAT(role.salary,2)) AS 'Salary', depart.name as 'Department', IFNULL( CONCAT( emp2.first_name, ' ', emp2.last_name ), '' ) as 'Manager' FROM employee emp LEFT JOIN role ON role.id = emp.role_id LEFT JOIN department depart ON depart.id = role.department_id LEFT JOIN employee emp2 ON emp2.id = emp.manager_id;", function (err, results) {
     console.table(results);
     startOrExit();
   });
@@ -298,7 +310,7 @@ function viewEmployees() {
 
 // Function to view all employees by department
 function viewEmployeesByDepartment() {
-  db.query("SELECT * FROM employee", function (err, results) {
+  db.query("SELECT emp.id AS 'ID', emp.first_name AS 'First Name', emp.last_name AS 'Last Name', depart.name AS 'Department' FROM employee emp LEFT JOIN role ON role.id = emp.role_id LEFT JOIN department depart ON depart.id = role.department_id;", function (err, results) {
     console.table(results);
     startOrExit();
   });
@@ -306,7 +318,7 @@ function viewEmployeesByDepartment() {
 
 // Function to view all employees by manager
 function viewEmployeesByManager() {
-  db.query("SELECT * FROM employee", function (err, results) {
+  db.query("SELECT emp.id AS 'ID', emp.first_name AS 'First Name', emp.last_name AS 'Last Name', IFNULL( CONCAT( emp2.first_name, ' ', emp2.last_name ), '' ) AS 'Manager' FROM employee emp LEFT JOIN role ON role.id = emp.role_id LEFT JOIN department depart ON depart.id = role.department_id LEFT JOIN employee emp2 ON emp2.id = emp.manager_id;", function (err, results) {
     console.table(results);
     startOrExit();
   });
@@ -399,7 +411,9 @@ function addEmployee() {
           .then(function (answers) {
             // Filter out role and manager id from answers and feed them in database
             const managerID = manager_result.filter((manager_result) => manager_result.manager_name === answers.manager)[0].id;
+
             const roleID = role_result.filter((role_result) => role_result.title === answers.role)[0].id;
+
             db.query(`INSERT INTO employee(first_name,last_name,role_id,manager_id) VALUES ('${answers.first_name}','${answers.last_name}','${roleID}','${managerID}');`, function (err) {
               if (err) throw err;
               console.log(answers.first_name + " " + answers.last_name + " is successfully added!");
@@ -438,60 +452,91 @@ function deleteEmployee() {
 
 // Function to update an employee's role
 function updateEmployeeRole() {
-  inquirer
-    .prompt([
-      {
-        name: "first_name",
-        type: "input",
-        message: "What is the first name of the employee you would like to update?",
-      },
-      {
-        name: "last_name",
-        type: "input",
-        message: "What is the last name of the employee you would like to update?",
-      },
-      {
-        name: "role_id",
-        type: "input",
-        message: "What is the role id of the employee you would like to update?",
-      },
-    ])
-    .then(function (answer) {
-      db.query("UPDATE employee SET role_id =? WHERE first_name =? AND last_name =?", [answer.role_id, answer.first_name, answer.last_name], function (err) {
-        if (err) throw err;
-        console.log("Your employee was updated successfully!");
-        startOrExit();
+  /*
+     Load all Roles 
+  */
+  db.query(`SELECT DISTINCT title,id FROM role`, (err, role_result) => {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          name: "first_name",
+          type: "input",
+          message: "What is the first name of the employee you would like to update?",
+        },
+        {
+          name: "last_name",
+          type: "input",
+          message: "What is the last name of the employee you would like to update?",
+        },
+        {
+          name: "role",
+          type: "list",
+          message: "Select the new Role for the Employee?",
+          choices: () => role_result.map((role_result) => role_result.title),
+        },
+      ])
+      .then(function (answer) {
+        /*
+            Retrieve the ID of the User Role selected and store in a constant variable
+            */
+        const roleID = role_result.filter((role_result) => role_result.title === answer.role)[0].id;
+
+        db.query("UPDATE employee SET role_id =? WHERE first_name =? AND last_name =?", [roleID, answer.first_name, answer.last_name], function (err) {
+          if (err) throw err;
+          console.log("Your employee was updated successfully!");
+          startOrExit();
+        });
       });
-    });
+  });
 } // end of update Employee Role function
 
 // Function to update an employee's manager
 function updateEmployeeManager() {
-  inquirer
-    .prompt([
-      {
-        name: "first_name",
-        type: "input",
-        message: "What is the first name of the employee you would like to update?",
-      },
-      {
-        name: "last_name",
-        type: "input",
-        message: "What is the last name of the employee you would like to update?",
-      },
-      {
-        name: "manager_id",
-        type: "input",
-        message: "What is the manager id of the employee you would like to update?",
-      },
-    ])
-    .then(function (answer) {
-      db.query("UPDATE employee SET manager_id =? WHERE first_name =? AND last_name =?", [answer.manager_id, answer.first_name, answer.last_name], function (err) {
-        if (err) throw err;
-        console.log("Your employee was updated successfully!");
-        startOrExit();
-      });
-    });
+  /*
+  Get all managers from the employee table
+  */
+  db.query(
+    `SELECT DISTINCT CONCAT(e.first_name," ",e.last_name) AS manager_name,e.id
+    FROM employee
+    LEFT JOIN employee e
+    ON employee.manager_id = e.id
+    WHERE employee.manager_id IS NOT NULL`,
+    (err, manager_result) => {
+      if (err) throw err;
+      inquirer
+        .prompt([
+          {
+            name: "first_name",
+            type: "input",
+            message: "What is the first name of the employee you would like to update?",
+          },
+          {
+            name: "last_name",
+            type: "input",
+            message: "What is the last name of the employee you would like to update?",
+          },
+          {
+            name: "manager",
+            type: "list",
+            message: "Who is the Manager of the employee you would like to update?",
+            choices: () => manager_result.map((manager_result) => manager_result.manager_name),
+          },
+        ])
+        .then(function (answer) {
+          /*
+            Retrieve the ID of the manager selected by the user and store in a constant variable
+            */
+          const managerID = manager_result.filter((manager_result) => manager_result.manager_name === answer.manager)[0].id;
+
+          db.query("UPDATE employee SET manager_id =? WHERE first_name =? AND last_name =?", [managerID, answer.first_name, answer.last_name], function (err) {
+            if (err) throw err;
+            console.log("Your employee was updated successfully!");
+            startOrExit();
+          });
+        });
+    }
+  );
 } // end of update Employee Manager function
 
 /***********************EMPLOYEE BLOCK************************:END*/

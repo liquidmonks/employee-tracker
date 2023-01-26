@@ -50,13 +50,12 @@ The user can create, read, update, and delete data from an employee database.
     - Run "npm start"
 
 
-## Application in Action
+## Application Demo Snippet
+![emp_tracker](https://user-images.githubusercontent.com/114820394/214878880-3bd87ed2-7852-4945-b41f-1df380c1c2a2.gif)
 
+## 🔗 Apllication Complete Feature Demo
+[![Live Site](https://img.shields.io/badge/livesite-click-orange)](https://screencast-o-matic.com/watch/c0VOIQVxjdN)
 
-
-
-## 🔗 Live Site Link
-[![Live Site](https://img.shields.io/badge/livesite-click-orange)](https://liquidmonks.github.io/team-profile-generator/www/public.html)
 
 ## Tech Stack
 
